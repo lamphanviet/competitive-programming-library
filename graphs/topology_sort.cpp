@@ -14,7 +14,8 @@ using namespace std;
 typedef vector<int> vi;
 
 #define N 300111
-#define M 26
+
+// test problem: http://codeforces.com/contest/919/problem/D
 
 int n;
 vi adj[N], order;
@@ -37,6 +38,7 @@ void dfs(int u) {
 
 // sort and put the nodes in order
 // cycle is true if there is cycle in the graph
+
 void topology_sort() {
     cycle = false;
     fr(i, 1, n) if (!mark[i]) {
