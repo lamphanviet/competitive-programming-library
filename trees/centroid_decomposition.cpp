@@ -118,19 +118,19 @@ void cal(int u) {
     }
 }
 
-void divide(int u) {
+void decompose(int u) {
     u = findCentroid(u);
     del[u] = true; cal(u);
     for (int v : adj[u]) {
         if (!del[v]) {
-            divide(v);
+            decompose(v);
         }
     }
 }
 
 void solve() {
     rep(i, n) lab[i] = 1 << (int)(s[i] - 'a');
-    divide(0);
+    decompose(0);
     rep(i, n) printf("%lld ", res[i] + res2[i] / 2);
     puts("");
 }
