@@ -54,7 +54,7 @@ struct BIndexTree {
         return get(hi) - get(lo - 1);
     }
 
-    void add(int i, int val) {
+    void add(int i, T val) {
         while (i < n) {
             value[i] += val;
             i += i & -i;
