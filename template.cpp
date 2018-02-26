@@ -31,9 +31,10 @@ typedef pair<int, ii> iii;
 typedef vector<ii> vii;
 typedef vector<int> vi;
 
-#define PI 3.1415926535897932385
-#define INF 1000111222
-#define eps 1e-7
+#define PI  3.1415926535897932385
+#define EPS 1e-7
+#define MOD 1000000007
+#define INF 1500111222
 #define N 100111
 
 
