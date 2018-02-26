@@ -39,7 +39,7 @@ struct Dsu {
     }
 
     int getRoot(int u) {
-        return lab[u] < 0 ? u : lab[u] = getRoot(u);
+        return lab[u] < 0 ? u : lab[u] = getRoot(lab[u]);
     }
 
     int unionSet(int u, int v) {
