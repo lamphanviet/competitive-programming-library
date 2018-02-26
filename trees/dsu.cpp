@@ -45,6 +45,7 @@ struct Dsu {
     int unionSet(int u, int v) {
         u = getRoot(u);
         v = getRoot(v);
+        if (u == v) return u;
         if (cnt[u] < cnt[v]) swap(u, v);
         cnt[u] += cnt[v];
         return lab[v] = u;
