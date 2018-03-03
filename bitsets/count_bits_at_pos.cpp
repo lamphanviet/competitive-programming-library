@@ -60,24 +60,16 @@ ll countBits(ll n, int pos) {
 
 ll solve() {
 	ll res = 0;
-	printf("%lld %lld\n", b, a);
-	repr(i, 20) {
+	repr(i, 60) {
 		ll bits = countBits(b, i) - countBits(a - 1, i);
-		printf("%d: %lld %lld\n", i, countBits(b, i), countBits(a - 1, i));
-		if (bits & 1) {
+		if (bits == b - a + 1) {
 			res |= (1LL << i);
 		}
 	}
-	ll res2 = 0;
-	fr(i, a, b) res2 ^= i;
 	return res;
 }
 
 int main() {
-	#ifndef ONLINE_JUDGE
-	freopen("inp.txt", "r", stdin);
-	//freopen("out.txt", "w", stdout);
-	#endif
 	ri(q);
 	while (q--) {
 		cin >> a >> b;
