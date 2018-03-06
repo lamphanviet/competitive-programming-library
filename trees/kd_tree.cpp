@@ -49,7 +49,6 @@ struct KDTree {
 	KDTree *left, *right;
 
 	KDTree() {
-		direction = true;
 		left = right = NULL;
 		data = NIL;
 	}
@@ -73,26 +72,27 @@ struct KDTree {
 		}
 	}
 
-	bool isLeaf() {
+	inline bool isLeaf() {
 		return x0 == xn && y0 == yn;
 	}
 
-	bool contains(int x, int y) {
+	inline bool contains(int x, int y) {
 		return (x0 <= x && x <= xn && y0 <= y && y <= yn);
 	}
 
-	bool contains(int x1, int x2, int y1, int y2) {
+	inline bool contains(int x1, int x2, int y1, int y2) {
 		return contains(x1, y1) && contains(x2, y2);
 	}
 
-	bool overlap(int x1, int x2, int y1, int y2) {
+	inline bool overlap(int x1, int x2, int y1, int y2) {
 		return max(x0, x1) <= min(xn, x2) && max(y0, y1) <= min(yn, y2);
 	}
 
-	bool inside(int x1, int x2, int y1, int y2) {
+	inline bool inside(int x1, int x2, int y1, int y2) {
 		return x1 <= x0 && xn <= x2 && y1 <= y0 && yn <= y2;
 	}
 
+	// update and maybe insert new node with value, only suitable for dynamic tree
 	T insert(int x, int y, T val) {
 		if (!contains(x, y)) return data;
 		if (isLeaf()) {
@@ -105,14 +105,42 @@ struct KDTree {
 		return data = max(ld, rd);
 	}
 
+	// update the existing nodes, no new node creation, the tree has to be built up-front
+	T update(int x, int y, T val) {
+		if (!contains(x, y)) return data;
+		if (isLeaf()) {
+			return data = max(data, val);
+		}
+		data = NIL;
+		if (left != NULL) {
+			data = max(data, left->update(x, y, val));
+		}
+		if (right != NULL) {
+			data = max(data, right->update(x, y, val));
+		}
+		return data;
+	}
+
 	T get(int x1, int x2, int y1, int y2) {
 		if (!overlap(x1, x2, y1, y2)) return NIL;
 		if (inside(x1, x2, y1, y2)) {
 			return data;
 		}
-		T ld = left == NULL ? NIL : left->get(x1, x2, y1, y2);
-		T rd = right == NULL ? NIL : right->get(x1, x2, y1, y2);
-		return max(ld, rd);
+		T res = NIL;
+		if (left != NULL) res = max(res, left->get(x1, x2, y1, y2));
+		if (right != NULL) res = max(res, right->get(x1, x2, y1, y2));
+		return res;
+	}
+
+	void get(int x1, int x2, int y1, int y2, T &res) {
+		if (data <= res) return;
+		if (!overlap(x1, x2, y1, y2)) return;
+		if (inside(x1, x2, y1, y2)) {
+			res = max(res, data);
+			return;
+		}
+		if (left != NULL) left->get(x1, x2, y1, y2, res);
+		if (right != NULL) right->get(x1, x2, y1, y2, res);
 	}
 };
 
@@ -131,26 +159,60 @@ int n, dlat, dlng;
 City a[N];
 KDTree<ll> *root;
 
-ll get(int x1, int x2, int y1, int y2) {
+bool cmp1(const City &a, const City &b) {
+	return a.lat < b.lat;
+}
+
+bool cmp2(const City &a, const City &b) {
+	return a.lng < b.lng;
+}
+
+KDTree<ll> *buildTree(int lo, int hi) {
+	KDTree<ll> *node = new KDTree<ll>();
+	node->direction = true;
+	node->x0 = node->xn = a[lo].lat;
+	node->y0 = node->yn = a[lo].lng;
+	if (lo == hi) {
+		return node;
+	}
+
+	fr(i, lo, hi) {
+		node->x0 = min(node->x0, a[i].lat);
+		node->xn = max(node->xn, a[i].lat);
+		node->y0 = min(node->y0, a[i].lng);
+		node->yn = max(node->yn, a[i].lng);
+	}
+
+	// partitioning based on the range
+	int dx = node->xn - node->x0;
+	int dy = node->yn - node->y0;
+	node->direction = dx > dy;
+
+	sort(a + lo, a + hi + 1, node->direction ? cmp1 : cmp2);
+	int mid = (lo + hi) >> 1;
+	node->left = buildTree(lo, mid);
+	node->right = buildTree(mid + 1, hi);
+	return node;
+}
+
+ll getMax(int x1, int x2, int y1, int y2) {
+	ll res = 0;
 	x1 = max(0, x1);
 	x2 = min(N, x2);
 	y1 = max(0, y1);
 	y2 = min(N, y2);
-	return root->get(x1, x2, y1, y2);
+	root->get(x1, x2, y1, y2, res);
+	return res;
 }
 
 ll solve() {
+	root = buildTree(0, n - 1);
 	sort(a, a + n);
-	root = new KDTree<ll>();
-	root->x0 = root->y0 = 0;
-	root->xn = root->yn = N;
 	ll res = NIL;
 	rep(i, n) {
-		ll fa = get(a[i].lat - dlat, a[i].lat + dlat, a[i].lng - dlng, a[i].lng + dlng);
-		fa = max(fa, 0LL);
+		ll fa = getMax(a[i].lat - dlat, a[i].lat + dlat, a[i].lng - dlng, a[i].lng + dlng);
 		fa += a[i].points;
-		//printf("%lld: %d %lld\n", i, a[i].h, fa);
-		root->insert(a[i].lat, a[i].lng, fa);
+		if (fa > 0) root->update(a[i].lat, a[i].lng, fa);
 		res = max(res, fa);
 	}
 	return res;
