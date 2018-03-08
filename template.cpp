@@ -21,6 +21,8 @@ using namespace std;
 #define AND(a,b) ((a) & (b))
 #define OR(a,b) ((a) | (b))
 #define XOR(a,b) ((a) ^ (b))
+#define ON(a,b) ((a) & (1 << (b)))
+#define OFF(a,b) (!((a) & (1 << (b))))
 #define sqr(x) ((x) * (x))
 
 #define ri(a) scanf("%d", &a)
